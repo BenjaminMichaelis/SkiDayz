@@ -2,6 +2,8 @@ package com.example.skidayz
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
+import android.widget.TextView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -42,6 +44,12 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        val headerView : View = navView.getHeaderView(0)
+        val navUsername : TextView = headerView.findViewById(R.id.userName)
+        navUsername.text = "Default User"
+        val navEmail : TextView = headerView.findViewById(R.id.userEmail)
+        navEmail.text = "defaultuser@android.com"
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
