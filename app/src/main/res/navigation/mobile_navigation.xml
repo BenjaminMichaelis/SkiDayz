@@ -22,4 +22,9 @@
         android:name="com.example.skidayz.ui.userprofile.UserProfileFragment"
         android:label="@string/menu_user_profile"
         tools:layout="@layout/fragment_user_profile" />
+    <fragment
+        android:id="@+id/gearProfileFragment"
+        android:name="com.example.skidayz.ui.gearprofile.GearProfileFragment"
+        android:label="@string/menu_gear_profile"
+        tools:layout="@layout/fragment_add_gear" />
 </navigation>
