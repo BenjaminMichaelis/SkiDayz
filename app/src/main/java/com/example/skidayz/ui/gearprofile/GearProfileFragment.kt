@@ -7,15 +7,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.skidayz.databinding.FragmentGearBinding
+//import com.example.skidayz.databinding.FragmentGearBinding
 
 class GearProfileFragment : Fragment() {
 
-    private var _binding: FragmentGearBinding? = null
+    //private var _binding: FragmentGearBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
-    private val binding get() = _binding!!
+    //private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,18 +25,19 @@ class GearProfileFragment : Fragment() {
         val userProfileViewModel =
             ViewModelProvider(this).get(GearProfileViewModel::class.java)
 
-        _binding = FragmentGearBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        //_binding = FragmentGearBinding.inflate(inflater, container, false)
+        //val root: View = binding.root
 
-        val textView: TextView = binding.imageTitle
+        //val textView: TextView = binding.imageTitle
         userProfileViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+            //textView.text = it
         }
-        return root
+        //return root
+        return View(context)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        //_binding = null
     }
 }
