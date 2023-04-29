@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Welcome to Astronomy Picture Of The Day"
+        android:text="SkiDayz"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,30 +20,18 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/resourceTitle"
-        tools:srcCompat="@tools:sample/avatars"
-        android:adjustViewBounds="true"
-        />
-
-    <VideoView
-        android:id="@+id/videoView"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:layout_centerInParent="true"
+        android:layout_width="371dp"
+        android:layout_height="209dp"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/resourceTitle"
+        android:src="@drawable/ic_sun_foreground"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/imageCopyright"
+        android:id="@+id/uVIndex"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -65,31 +53,7 @@
         app:layout_constraintBottom_toTopOf="@+id/fetchButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageCopyright" />
-    <TextView
-        android:id="@+id/videoCopyright"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text=""
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/videoView" />
-
-    <TextView
-        android:id="@+id/videoDescription"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:scrollbars="vertical"
-        android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/btnPick"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/videoCopyright" />
+        app:layout_constraintTop_toBottomOf="@+id/uVIndex" />
 
     <Button
         android:id="@+id/btnPick"
