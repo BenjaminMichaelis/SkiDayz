@@ -2,27 +2,26 @@ package com.example.skidayz
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
-import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.ImageView
-import android.widget.MediaController
 import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.bumptech.glide.Glide
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.Calendar
-
 
 class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     lateinit var datePickerButton: Button
@@ -34,6 +33,9 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     lateinit var videoView: VideoView
     lateinit var videoCopyright: TextView
     lateinit var videoDesc: TextView
+    lateinit var fusedLocationClient: FusedLocationProviderClient
+    var lastLocation: android.location.Location? = null
+    var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
     var day = 0
     var month: Int = 0
     var year: Int = 0
@@ -44,6 +46,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         resourceTitle = findViewById<TextView>(R.id.resourceTitle)
         imgView = findViewById<ImageView>(R.id.imageView)
@@ -70,6 +74,44 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             datePickerDialog.datePicker.maxDate = calendar.timeInMillis;
             datePickerDialog.show()
         }
+
+        lastLocation = Location("dummyprovider")
+        lastLocation?.latitude = 46.43569
+        lastLocation?.longitude = -117.10090
+//        if (ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.ACCESS_COARSE_LOCATION
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            // TODO: Consider calling
+//            //    ActivityCompat#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for ActivityCompat#requestPermissions for more details.
+//            fusedLocationClient.getLastLocation()
+//                .addOnSuccessListener { foundLocation: Location? ->
+//                    if (foundLocation != null) {
+//                        lastLocation = foundLocation
+//                    } else {
+//                        lastLocation = Location("dummyprovider")
+//                        lastLocation?.latitude = 46.43569
+//                        lastLocation?.longitude = -117.10090
+//                    }
+//                }
+//        } else {
+//            requestPermissions(
+//                arrayOf(
+//                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION
+//                ),
+//                1
+//            )
+//        }
     }
 
     fun fetchInfo(view: View) {
@@ -88,70 +130,15 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             var mediaType = ""
 
             var url =
-                "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+                "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
-            if (selectedDay != 0 && selectedMonth != 0 && selectedYear != 0) {
-                url = "$url&date=$selectedYear-$selectedMonth-$selectedDay"
-            }
             datePickerButton.visibility = View.INVISIBLE
             val queue = Volley.newRequestQueue(this)
             val jsonObjectRequest = JsonObjectRequest(
                 Request.Method.GET, url, null,
                 { response ->
-                    resourceTitle.text = response.getString("title")
-                    desc = response.getString("explanation")
-                    copyright = if (response.has("copyright")) {
-                        response.getString("copyright")
-                    } else {
-                        "no copyright"
-                    }
-                    mediaType = if (response.has("media_type")) {
-                        response.getString("media_type")
-                    } else {
-                        ""
-                    }
-                    var resourceUrl = response.getString("url")
-                    if (resourceUrl.isNullOrEmpty()) {
-                        imageDesc.text = "Resource URL is empty"
-                    } else if (!URLUtil.isValidUrl(resourceUrl)) {
-                        imageDesc.text = "Resource URL is invalid"
-                    } else {
-                        var resourceURI = Uri.parse(resourceUrl)
-                        if (resourceURI.scheme == "http") {
-                            resourceURI = Uri.parse(resourceUrl.replace("http", "https"))
-                        }
-                        Glide.with(this).load(resourceURI.toString()).into(imgView)
-                        when (getMediaType(this, resourceURI, mediaType)) {
-                            MediaType.MediaTypeImage -> {
-                                imgView.visibility = View.VISIBLE
-                                videoDesc.visibility = View.INVISIBLE
-                                videoCopyright.visibility = View.INVISIBLE
-                                videoView.visibility = View.INVISIBLE
-                                imageCopyright.text = copyright
-                                imageDesc.text = desc
-                                Glide.with(this).load(resourceURI.toString()).into(imgView)
-                            }
-
-                            MediaType.MediaTypeVideo -> {
-                                imgView.visibility = View.INVISIBLE
-                                videoView.visibility = View.VISIBLE
-                                imageDesc.visibility = View.INVISIBLE
-                                imageCopyright.visibility = View.INVISIBLE
-                                videoDesc.text = desc
-                                videoCopyright.text = copyright
-                                videoView.setVideoURI(resourceURI)
-                                val mediaController = MediaController(this)
-                                mediaController.setAnchorView(videoView)
-                                mediaController.setMediaPlayer(videoView)
-                                videoView.setMediaController(mediaController)
-                                videoView.start()
-                            }
-
-                            else -> {
-                                imageDesc.text = "Unknown media type"
-                            }
-                        }
-                    }
+                    val dataObject = (response.getJSONArray("data")[0] as JSONObject)
+                    resourceTitle.text = dataObject.getString("city_name")
                 },
                 { error ->
                     if (error?.networkResponse == null) {
