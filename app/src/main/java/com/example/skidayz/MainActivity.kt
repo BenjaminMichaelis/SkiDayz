@@ -2,6 +2,7 @@ package com.example.skidayz
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
@@ -13,10 +14,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -78,43 +82,10 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         lastLocation = Location("dummyprovider")
         lastLocation?.latitude = 46.43569
         lastLocation?.longitude = -117.10090
-//        if (ActivityCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.ACCESS_FINE_LOCATION
-//            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.ACCESS_COARSE_LOCATION
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            fusedLocationClient.getLastLocation()
-//                .addOnSuccessListener { foundLocation: Location? ->
-//                    if (foundLocation != null) {
-//                        lastLocation = foundLocation
-//                    } else {
-//                        lastLocation = Location("dummyprovider")
-//                        lastLocation?.latitude = 46.43569
-//                        lastLocation?.longitude = -117.10090
-//                    }
-//                }
-//        } else {
-//            requestPermissions(
-//                arrayOf(
-//                    Manifest.permission.ACCESS_FINE_LOCATION,
-//                    Manifest.permission.ACCESS_COARSE_LOCATION
-//                ),
-//                1
-//            )
-//        }
     }
 
     fun fetchInfo(view: View) {
+        getActualLocation()
         if (fetchButton.text.startsWith("Fetch", true)) {
             // Add vertical scrolling to the text view
             imageDesc.movementMethod = ScrollingMovementMethod()
@@ -194,6 +165,27 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
         fetchButton.text = "Fetch Information for $selectedMonth-$selectedDay-$selectedYear"
     }
+
+    private fun getActualLocation() {
+
+        val task = fusedLocationClient.lastLocation
+
+        if (ActivityCompat
+                .checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED && ActivityCompat
+                .checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED){
+
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+            return
+        }
+
+        task.addOnSuccessListener {
+            if (it != null){
+                lastLocation = it
+            }
+        }
+    }// one curly brace could be missing (or not)
 }
 
 enum class MediaType {
