@@ -20,25 +20,23 @@ import com.google.android.gms.location.LocationServices
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
-import java.util.Calendar
 
 class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     lateinit var datePickerButton: Button
     lateinit var fetchButton: Button
-    lateinit var imageDesc: TextView
-    lateinit var resourceTitle: TextView
+    lateinit var recommendations: TextView
+    lateinit var locationName: TextView
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
-    var day = 0
-    var month: Int = 0
-    var year: Int = 0
     var selectedDay = 0
     var selectedMonth: Int = 0
     var selectedYear: Int = 0
     var weatherCode: Int? = null
+    var uv: Double? = null
+    var clouds: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,45 +44,42 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        resourceTitle = findViewById<TextView>(R.id.resourceTitle)
+        locationName = findViewById<TextView>(R.id.resourceTitle)
         imgView = findViewById<ImageView>(R.id.imageView)
         imageCopyright = findViewById<TextView>(R.id.uVIndex)
 
-
         imgView.setImageResource(R.drawable.icon_sun_rain_foreground)
 
-        imageDesc = findViewById<TextView>(R.id.imageDescription)
+        recommendations = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
         datePickerButton = findViewById(R.id.btnPick)
-        /*datePickerButton.setOnClickListener {
-            val calendar: Calendar = Calendar.getInstance()
-            day = calendar.get(Calendar.DAY_OF_MONTH)
-            month = calendar.get(Calendar.MONTH)
-            year = calendar.get(Calendar.YEAR)
-            val datePickerDialog =
-                DatePickerDialog(this@MainActivity, this@MainActivity, year, month, day)
-            // Don't allow for choosing dates in future
-            datePickerDialog.datePicker.maxDate = calendar.timeInMillis
-            datePickerDialog.show()
-        }*/
 
-        lastLocation = Location("dummyprovider")
-        lastLocation?.latitude = 46.43569
-        lastLocation?.longitude = -117.10090
+        getActualLocation()
     }
 
     fun fetchInfo(view: View) {
         getActualLocation()
         if (fetchButton.text.startsWith("Fetch", true)) {
             // Add vertical scrolling to the text view
-            imageDesc.movementMethod = ScrollingMovementMethod()
+            recommendations.movementMethod = ScrollingMovementMethod()
 
             // Set image view to default image
             imgView.visibility = View.VISIBLE
             imgView.setImageResource(R.drawable.icon_cloud_foreground)
 
-            resourceTitle.text = "Fetching"
+            locationName.text = "Fetching"
 
+            if (lastLocation == null) {
+                locationName.text = "Error"
+                recommendations.text = "Unable to get location, please try again"
+                getActualLocation()
+                return
+            }
+            else
+            {
+                locationName.text = "Fetching"
+                recommendations.text = ""
+            }
             var url =
                 "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
@@ -94,13 +89,16 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                 Request.Method.GET, url, null,
                 { response ->
                     val dataObject = (response.getJSONArray("data")[0] as JSONObject)
-                    resourceTitle.text = dataObject.getString("city_name")
+                    locationName.text = dataObject.getString("city_name")
+                    uv = dataObject.getDouble("uv")
+                    clouds = dataObject.getInt("clouds")
                     weatherCode = dataObject.getJSONObject("weather").getInt("code")
                     determineWeatherIcon(weatherCode)
+                    determineGoggleNeeds(clouds, uv)
                 },
                 { error ->
                     if (error?.networkResponse == null) {
-                        imageDesc.text = "Unknown Error with no response"
+                        recommendations.text = "Unknown Error with no response"
                     } else {
                         var body: String = ""
                         //get status code here
@@ -118,8 +116,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                         } catch (e: UnsupportedEncodingException) {
                             // exception
                         }
-                        resourceTitle.text = "Error"
-                        imageDesc.text =
+                        locationName.text = "Error"
+                        recommendations.text =
                             "Unknown Error with message: $body status code: $statusCode."
                     }
                 })
@@ -128,16 +126,22 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         } else {
             fetchButton.text = "Fetch Today's Information"
             datePickerButton.visibility = View.VISIBLE
-            resourceTitle.text = "Welcome to SkiDayz"
+            locationName.text = "Welcome to SkiDayz"
 
-            imageDesc.visibility = View.VISIBLE
-            imageDesc.text = ""
+            recommendations.visibility = View.VISIBLE
+            recommendations.text = ""
             imageCopyright.text = ""
             selectedDay = 0
             selectedMonth = 0
             selectedYear = 0
         }
 
+    }
+
+    private fun determineGoggleNeeds(clouds: Int?, uv: Double?) {
+        when (clouds) {
+            in 1..10 -> recommendations.text = ""
+        }
     }
 
     private fun determineWeatherIcon(weatherCode: Int?) {
