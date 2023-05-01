@@ -1,13 +1,11 @@
 package com.example.skidayz
 
-import android.app.DatePickerDialog
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.Button
-import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +19,7 @@ import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 
-class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
+class MainActivity : AppCompatActivity() {
     lateinit var datePickerButton: Button
     lateinit var fetchButton: Button
     lateinit var recommendations: TextView
@@ -31,9 +29,6 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     lateinit var fusedLocationClient: FusedLocationProviderClient
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
-    var selectedDay = 0
-    var selectedMonth: Int = 0
-    var selectedYear: Int = 0
     var weatherCode: Int? = null
     var uv: Double? = null
     var clouds: Int? = null
@@ -57,7 +52,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         getActualLocation()
     }
 
-    fun fetchInfo(view: View) {
+    fun fetchInfo() {
         getActualLocation()
         if (fetchButton.text.startsWith("Fetch", true)) {
             // Add vertical scrolling to the text view
@@ -131,9 +126,6 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             recommendations.visibility = View.VISIBLE
             recommendations.text = ""
             imageCopyright.text = ""
-            selectedDay = 0
-            selectedMonth = 0
-            selectedYear = 0
         }
 
     }
@@ -183,14 +175,6 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                 }
             }
         }
-    }
-
-    override fun onDateSet(p0: DatePicker?, p1: Int, p2: Int, p3: Int) {
-        selectedDay = p3
-        selectedYear = p1
-        selectedMonth = p2 + 1
-
-        fetchButton.text = "Fetch Information for $selectedMonth-$selectedDay-$selectedYear"
     }
 
     private fun getActualLocation() {
