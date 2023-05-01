@@ -1,10 +1,8 @@
 package com.example.skidayz
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -12,15 +10,12 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -34,11 +29,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     lateinit var resourceTitle: TextView
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
-    lateinit var videoView: VideoView
-    lateinit var videoCopyright: TextView
-    lateinit var videoDesc: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
-    var lastLocation: android.location.Location? = null
+    var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
     var day = 0
     var month: Int = 0
@@ -46,6 +38,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     var selectedDay = 0
     var selectedMonth: Int = 0
     var selectedYear: Int = 0
+    var weatherCode: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +64,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             val datePickerDialog =
                 DatePickerDialog(this@MainActivity, this@MainActivity, year, month, day)
             // Don't allow for choosing dates in future
-            datePickerDialog.datePicker.maxDate = calendar.timeInMillis;
+            datePickerDialog.datePicker.maxDate = calendar.timeInMillis
             datePickerDialog.show()
         }
 
@@ -92,10 +85,6 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
             resourceTitle.text = "Fetching"
 
-            var desc = ""
-            var copyright = ""
-            var mediaType = ""
-
             var url =
                 "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
@@ -106,6 +95,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                 { response ->
                     val dataObject = (response.getJSONArray("data")[0] as JSONObject)
                     resourceTitle.text = dataObject.getString("city_name")
+                    weatherCode = dataObject.getJSONObject("weather").getInt("code")
+                    determineWeatherIcon(weatherCode)
                 },
                 { error ->
                     if (error?.networkResponse == null) {
@@ -149,6 +140,37 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
     }
 
+    private fun determineWeatherIcon(weatherCode: Int?) {
+        if (weatherCode == null) {
+            imgView.setImageResource(R.drawable.icon_sun_rain_foreground)
+            return
+        } else {
+            // based on codes returned from https://www.weatherbit.io/api/codes, determine the weather icon to set
+            // imgView.setImageResource() to the appropriate icon
+            if (weatherCode > 199 && weatherCode < 234) {
+                // thunderstorm
+            } else if (weatherCode > 299 && weatherCode < 503) {
+                // drizzle
+                // rain
+            } else if (weatherCode > 599 && weatherCode < 624) {
+                // snow
+                imgView.setImageResource(R.drawable.icon_snow_foreground)
+            } else if (weatherCode > 700 && weatherCode < 782) {
+                // atmosphere
+                imgView.setImageResource(R.drawable.icon_cloud_foreground)
+            } else if (weatherCode == 800) {
+                // clear
+                imgView.setImageResource(R.drawable.icon_sun_foreground)
+            } else if (weatherCode > 800 && weatherCode < 805) {
+                // clouds
+                imgView.setImageResource(R.drawable.icon_cloud_foreground)
+            } else {
+                // default
+                imgView.setImageResource(R.drawable.icon_cloud_foreground)
+            }
+        }
+    }
+
     override fun onDateSet(p0: DatePicker?, p1: Int, p2: Int, p3: Int) {
         selectedDay = p3
         selectedYear = p1
@@ -165,55 +187,21 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
                 .checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED && ActivityCompat
                 .checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED){
+            != PackageManager.PERMISSION_GRANTED
+        ) {
 
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                101
+            )
             return
         }
 
         task.addOnSuccessListener {
-            if (it != null){
+            if (it != null) {
                 lastLocation = it
             }
         }
-    }// one curly brace could be missing (or not)
-}
-
-enum class MediaType {
-    MediaTypeImage,
-    MediaTypeVideo,
-    Unknown
-}
-
-fun getMediaType(context: Context, source: Uri, mediaType: String): MediaType {
-    if (mediaType.isNullOrBlank()) {
-        val mediaTypeRaw = context.contentResolver.getType(source)
-        if (mediaTypeRaw == null) {
-            val path = source.path
-            if (path != null) {
-                return if (path.endsWith(".jpg", true) || path.endsWith(
-                        ".jpeg",
-                        true
-                    ) || path.endsWith(
-                        ".png",
-                        true
-                    )
-                )
-                    MediaType.MediaTypeImage
-                else if (path.endsWith(".mp4", true) || path.endsWith(".mov", true))
-                    MediaType.MediaTypeVideo
-                else {
-                    MediaType.Unknown
-                }
-            }
-        } else if (mediaTypeRaw.startsWith("image", true))
-            return MediaType.MediaTypeImage
-        else if (mediaTypeRaw.startsWith("video", true))
-            return MediaType.MediaTypeVideo
-        return MediaType.Unknown
-    } else if (mediaType.startsWith("image", true))
-        return MediaType.MediaTypeImage
-    else if (mediaType.startsWith("video", true))
-        return MediaType.MediaTypeVideo
-    return MediaType.Unknown
+    } // one curly brace could be missing (or not)
 }
