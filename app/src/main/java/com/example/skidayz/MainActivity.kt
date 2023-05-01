@@ -55,14 +55,10 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
         resourceTitle = findViewById<TextView>(R.id.resourceTitle)
         imgView = findViewById<ImageView>(R.id.imageView)
-        imageCopyright = findViewById<TextView>(R.id.imageCopyright)
-        videoView = findViewById<VideoView>(R.id.videoView)
-        videoView.visibility = View.INVISIBLE
-        videoCopyright = findViewById<TextView>(R.id.videoCopyright)
-        videoDesc = findViewById<TextView>(R.id.videoDescription)
+        imageCopyright = findViewById<TextView>(R.id.uVIndex)
 
-        imgView.visibility = View.INVISIBLE
-        imgView.setImageResource(R.drawable.ic_launcher_background)
+        //imgView.visibility = View.INVISIBLE
+        imgView.setImageResource(R.drawable.icon_sun_rain_foreground)
 
         imageDesc = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
@@ -92,7 +88,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
 
             // Set image view to default image
             imgView.visibility = View.VISIBLE
-            imgView.setImageResource(R.drawable.ic_launcher_background)
+            imgView.setImageResource(R.drawable.icon_cloud_foreground)
 
             resourceTitle.text = "Fetching"
 
@@ -143,13 +139,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             datePickerButton.visibility = View.VISIBLE
             resourceTitle.text = "Welcome to Astronomy Picture Of The Day"
 
-            imgView.visibility = View.INVISIBLE
-            videoView.visibility = View.INVISIBLE
             imageDesc.visibility = View.VISIBLE
-            videoDesc.visibility = View.INVISIBLE
             imageDesc.text = ""
-            videoDesc.text = ""
-            videoCopyright.text = ""
             imageCopyright.text = ""
             selectedDay = 0
             selectedMonth = 0
