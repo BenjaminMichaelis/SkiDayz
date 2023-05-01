@@ -50,13 +50,13 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         imgView = findViewById<ImageView>(R.id.imageView)
         imageCopyright = findViewById<TextView>(R.id.uVIndex)
 
-        //imgView.visibility = View.INVISIBLE
+
         imgView.setImageResource(R.drawable.icon_sun_rain_foreground)
 
         imageDesc = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
         datePickerButton = findViewById(R.id.btnPick)
-        datePickerButton.setOnClickListener {
+        /*datePickerButton.setOnClickListener {
             val calendar: Calendar = Calendar.getInstance()
             day = calendar.get(Calendar.DAY_OF_MONTH)
             month = calendar.get(Calendar.MONTH)
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
             // Don't allow for choosing dates in future
             datePickerDialog.datePicker.maxDate = calendar.timeInMillis
             datePickerDialog.show()
-        }
+        }*/
 
         lastLocation = Location("dummyprovider")
         lastLocation?.latitude = 46.43569
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         } else {
             fetchButton.text = "Fetch Today's Information"
             datePickerButton.visibility = View.VISIBLE
-            resourceTitle.text = "Welcome to Astronomy Picture Of The Day"
+            resourceTitle.text = "Welcome to SkiDayz"
 
             imageDesc.visibility = View.VISIBLE
             imageDesc.text = ""
@@ -147,26 +147,36 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         } else {
             // based on codes returned from https://www.weatherbit.io/api/codes, determine the weather icon to set
             // imgView.setImageResource() to the appropriate icon
-            if (weatherCode > 199 && weatherCode < 234) {
-                // thunderstorm
-            } else if (weatherCode > 299 && weatherCode < 503) {
-                // drizzle
-                // rain
-            } else if (weatherCode > 599 && weatherCode < 624) {
-                // snow
-                imgView.setImageResource(R.drawable.icon_snow_foreground)
-            } else if (weatherCode > 700 && weatherCode < 782) {
-                // atmosphere
-                imgView.setImageResource(R.drawable.icon_cloud_foreground)
-            } else if (weatherCode == 800) {
-                // clear
-                imgView.setImageResource(R.drawable.icon_sun_foreground)
-            } else if (weatherCode > 800 && weatherCode < 805) {
-                // clouds
-                imgView.setImageResource(R.drawable.icon_cloud_foreground)
-            } else {
-                // default
-                imgView.setImageResource(R.drawable.icon_cloud_foreground)
+            when (weatherCode) {
+                in 200..233 -> {
+                    // thunderstorm
+                    imgView.setImageResource(R.drawable.icon_thunder_foreground)
+                }
+                in 300..502 -> {
+                    // drizzle
+                    // rain
+                    imgView.setImageResource(R.drawable.icon_light_rain_foreground)
+                }
+                in 600..623 -> {
+                    // snow
+                    imgView.setImageResource(R.drawable.icon_snow_foreground)
+                }
+                in 701..781 -> {
+                    // atmosphere
+                    imgView.setImageResource(R.drawable.icon_cloud_foreground)
+                }
+                800 -> {
+                    // clear
+                    imgView.setImageResource(R.drawable.icon_sun_foreground)
+                }
+                in 801..804 -> {
+                    // clouds
+                    imgView.setImageResource(R.drawable.icon_cloud_foreground)
+                }
+                else -> {
+                    // default
+                    imgView.setImageResource(R.drawable.icon_cloud_foreground)
+                }
             }
         }
     }
