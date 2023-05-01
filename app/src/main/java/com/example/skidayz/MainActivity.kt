@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     var weatherCode: Int? = null
     var uv: Double? = null
     var clouds: Int? = null
+    var recommendationsText: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         getActualLocation()
     }
 
-    fun fetchInfo() {
+    fun fetchInfo(view: View) {
         getActualLocation()
         if (fetchButton.text.startsWith("Fetch", true)) {
             // Add vertical scrolling to the text view
@@ -69,9 +70,7 @@ class MainActivity : AppCompatActivity() {
                 recommendations.text = "Unable to get location, please try again"
                 getActualLocation()
                 return
-            }
-            else
-            {
+            } else {
                 locationName.text = "Fetching"
                 recommendations.text = ""
             }
@@ -89,7 +88,10 @@ class MainActivity : AppCompatActivity() {
                     clouds = dataObject.getInt("clouds")
                     weatherCode = dataObject.getJSONObject("weather").getInt("code")
                     determineWeatherIcon(weatherCode)
-                    determineGoggleNeeds(clouds, uv)
+                    determineGoggleNeeds(clouds)
+                    determineSunscreenNeeds(uv)
+
+                    recommendations.text = recommendationsText
                 },
                 { error ->
                     if (error?.networkResponse == null) {
@@ -130,9 +132,28 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun determineGoggleNeeds(clouds: Int?, uv: Double?) {
-        when (clouds) {
-            in 1..10 -> recommendations.text = ""
+    private fun determineSunscreenNeeds(uv: Double?) {
+        if (uv == null) {
+            recommendationsText += "Unexpected UV Index results. Please try again. "
+            return
+        }
+        recommendationsText += "For sunscreen, "
+        recommendationsText += when (uv) {
+            in 0.0..2.9 -> "we would recommend SPF 15 or higher. "
+            in 3.0..5.9 -> "we would recommend SPF 30 or higher. "
+            in 6.0..7.9 -> "we would recommend SPF 50 or higher. "
+            in 8.0..10.9 -> "we would recommend SPF 70 or higher. "
+            in 11.0..100.0 -> "we would recommend SPF 100 or higher. "
+            else -> "unexpected UV Index results. Please try again. "
+        }
+    }
+
+    private fun determineGoggleNeeds(clouds: Int?) {
+        recommendationsText += when (clouds) {
+            in 0..25 -> "We would recommend wearing dark lenses (Platinum, black, red). "
+            in 26..50 -> "We would recommend wearing semi-dark lenses (Blue, green, red). "
+            in 51..100 -> "You should wear light goggles (Yellow, gold/copper, amber, rose). "
+            else -> "Unexpected Cloud coverage results. Please try again. "
         }
     }
 
@@ -148,27 +169,33 @@ class MainActivity : AppCompatActivity() {
                     // thunderstorm
                     imgView.setImageResource(R.drawable.icon_thunder_foreground)
                 }
+
                 in 300..502 -> {
                     // drizzle
                     // rain
                     imgView.setImageResource(R.drawable.icon_light_rain_foreground)
                 }
+
                 in 600..623 -> {
                     // snow
                     imgView.setImageResource(R.drawable.icon_snow_foreground)
                 }
+
                 in 701..781 -> {
                     // atmosphere
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
                 }
+
                 800 -> {
                     // clear
                     imgView.setImageResource(R.drawable.icon_sun_foreground)
                 }
+
                 in 801..804 -> {
                     // clouds
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
                 }
+
                 else -> {
                     // default
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
