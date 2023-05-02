@@ -2,6 +2,7 @@ package com.example.skidayz
 
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -42,8 +44,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //mapFragment?.getMapAsync(googleMap)
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         locationName = findViewById<TextView>(R.id.resourceTitle)
@@ -63,12 +63,21 @@ class MainActivity : AppCompatActivity() {
         ) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
             googleMap.setOnMapLoadedCallback {
+                googleMap.uiSettings.isZoomControlsEnabled = true
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(50.0, -117.0
                 )))
             }
+            googleMap.setOnMapClickListener {
+                googleMap.addMarker(MarkerOptions().position(it))
+                /*lastLocation = Location(LocationManager.GPS_PROVIDER).apply {
+                    latitude = it.latitude
+                    longitude = it.longitude
+                }*/
+            }
         }
     }
-    private fun addMarkers(googleMap: GoogleMap) {
+
+    private fun addMarker(googleMap: GoogleMap) {
         /*places.forEach { place ->
             val marker = googleMap.addMarker(
                 MarkerOptions()
@@ -79,14 +88,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     data class Place(
-        val name: String,
         val latLng: LatLng,
-        val address: LatLng,
-        val rating: Float
+        val address: LatLng
     )
 
-    fun fetchInfo() {
-        getActualLocation()
+    fun fetchInfo(view:View) {
+
+        if(lastLocation == null)
+        {
+            getActualLocation()
+        }
+
         if (fetchButton.text.startsWith("Fetch", true)) {
             // Add vertical scrolling to the text view
             recommendations.movementMethod = ScrollingMovementMethod()
