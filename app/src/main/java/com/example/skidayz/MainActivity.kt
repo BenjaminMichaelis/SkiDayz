@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
+    var coords: LatLng? = null
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
     var weatherCode: Int? = null
@@ -65,6 +66,12 @@ class MainActivity : AppCompatActivity() {
                 googleMap.uiSettings.isZoomControlsEnabled = true
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(50.0, -117.0
                 )))
+
+                if (lastLocation != null)
+                {
+                    googleMap.clear()
+                    googleMap.addMarker(MarkerOptions().position(LatLng(lastLocation!!.latitude, lastLocation!!.longitude)))
+                }
             }
             googleMap.setOnMapClickListener {
                 googleMap.clear()
@@ -77,11 +84,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-    data class Place(
-        val latLng: LatLng,
-        val address: LatLng
-    )
 
     fun fetchInfo(view:View) {
 
