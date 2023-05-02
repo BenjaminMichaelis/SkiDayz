@@ -21,13 +21,13 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 
 class MainActivity : AppCompatActivity() {
-    lateinit var datePickerButton: Button
     lateinit var fetchButton: Button
     lateinit var recommendations: TextView
     lateinit var locationName: TextView
@@ -54,7 +54,6 @@ class MainActivity : AppCompatActivity() {
 
         recommendations = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
-        datePickerButton = findViewById(R.id.btnPick)
 
         getActualLocation()
 
@@ -68,23 +67,15 @@ class MainActivity : AppCompatActivity() {
                 )))
             }
             googleMap.setOnMapClickListener {
+                googleMap.clear()
                 googleMap.addMarker(MarkerOptions().position(it))
-                /*lastLocation = Location(LocationManager.GPS_PROVIDER).apply {
+
+                lastLocation = Location(LocationManager.GPS_PROVIDER).apply {
                     latitude = it.latitude
                     longitude = it.longitude
-                }*/
+                }
             }
         }
-    }
-
-    private fun addMarker(googleMap: GoogleMap) {
-        /*places.forEach { place ->
-            val marker = googleMap.addMarker(
-                MarkerOptions()
-                    .title(place.name)
-                    .position(place.latLng)
-            )
-        }*/
     }
 
     data class Place(
@@ -123,7 +114,7 @@ class MainActivity : AppCompatActivity() {
             var url =
                 "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
-            datePickerButton.visibility = View.INVISIBLE
+
             val queue = Volley.newRequestQueue(this)
             val jsonObjectRequest = JsonObjectRequest(
                 Request.Method.GET, url, null,
@@ -161,11 +152,10 @@ class MainActivity : AppCompatActivity() {
                             "Unknown Error with message: $body status code: $statusCode."
                     }
                 })
-            fetchButton.text = "Choose another date"
+            fetchButton.text = "Return to home page"
             queue.add(jsonObjectRequest)
         } else {
-            fetchButton.text = "Fetch Today's Information"
-            datePickerButton.visibility = View.VISIBLE
+            fetchButton.text = "Fetch Location Information"
             locationName.text = "Welcome to SkiDayz"
 
             recommendations.visibility = View.VISIBLE

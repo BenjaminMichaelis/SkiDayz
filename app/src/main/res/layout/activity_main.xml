@@ -33,7 +33,7 @@
     <FrameLayout
         android:layout_width="313dp"
         android:layout_height="264dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnPick"
+        app:layout_constraintBottom_toTopOf="@+id/imageDescription"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/uVIndex"
@@ -73,17 +73,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/uVIndex"
         app:layout_constraintVertical_bias="1.0" />
-
-    <Button
-        android:id="@+id/btnPick"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Pick Location"
-        app:layout_constraintBottom_toTopOf="@+id/imageDescription"
-        app:layout_constraintBottom_toBottomOf="@+id/fetchButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
 
     <Button
         android:id="@+id/fetchButton"
