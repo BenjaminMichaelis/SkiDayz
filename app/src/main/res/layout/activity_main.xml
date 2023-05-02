@@ -21,14 +21,31 @@
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="371dp"
-        android:layout_height="209dp"
+        android:layout_height="156dp"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
+        android:src="@drawable/ic_sun_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/resourceTitle"
-        android:src="@drawable/ic_sun_foreground"
         tools:srcCompat="@tools:sample/avatars" />
+
+    <FrameLayout
+        android:layout_width="313dp"
+        android:layout_height="264dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnPick"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/uVIndex"
+        tools:context=".MainActivity">
+
+        <fragment
+            android:id="@+id/map_fragment"
+            class="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/uVIndex"
@@ -42,8 +59,8 @@
 
     <TextView
         android:id="@+id/imageDescription"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="373dp"
+        android:layout_height="109dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -52,8 +69,10 @@
         android:text="Recommendations:"
         app:layout_constraintBottom_toTopOf="@+id/fetchButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.636"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/uVIndex" />
+        app:layout_constraintTop_toBottomOf="@+id/uVIndex"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/btnPick"

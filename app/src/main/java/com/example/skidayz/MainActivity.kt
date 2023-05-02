@@ -15,6 +15,11 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -37,6 +42,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //mapFragment?.getMapAsync(googleMap)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         locationName = findViewById<TextView>(R.id.resourceTitle)
@@ -50,7 +57,33 @@ class MainActivity : AppCompatActivity() {
         datePickerButton = findViewById(R.id.btnPick)
 
         getActualLocation()
+
+        val mapFragment = supportFragmentManager.findFragmentById(
+            R.id.map_fragment
+        ) as? SupportMapFragment
+        mapFragment?.getMapAsync { googleMap ->
+            googleMap.setOnMapLoadedCallback {
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(50.0, -117.0
+                )))
+            }
+        }
     }
+    private fun addMarkers(googleMap: GoogleMap) {
+        /*places.forEach { place ->
+            val marker = googleMap.addMarker(
+                MarkerOptions()
+                    .title(place.name)
+                    .position(place.latLng)
+            )
+        }*/
+    }
+
+    data class Place(
+        val name: String,
+        val latLng: LatLng,
+        val address: LatLng,
+        val rating: Float
+    )
 
     fun fetchInfo() {
         getActualLocation()
