@@ -2,6 +2,7 @@ package com.example.skidayz
 
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -15,18 +16,22 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 
 class MainActivity : AppCompatActivity() {
-    lateinit var datePickerButton: Button
     lateinit var fetchButton: Button
     lateinit var recommendations: TextView
     lateinit var locationName: TextView
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
+    var mapFragment: SupportMapFragment? = null
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
     var weatherCode: Int? = null
@@ -48,9 +53,45 @@ class MainActivity : AppCompatActivity() {
 
         recommendations = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
-        datePickerButton = findViewById(R.id.btnPick)
 
         getActualLocation()
+
+        mapFragment = supportFragmentManager.findFragmentById(
+            R.id.map_fragment
+        ) as? SupportMapFragment
+        mapFragment?.getMapAsync { googleMap ->
+            googleMap.setOnMapLoadedCallback {
+                googleMap.uiSettings.isZoomControlsEnabled = true
+                googleMap.moveCamera(
+                    CameraUpdateFactory.newLatLng(
+                        LatLng(
+                            50.0, -117.0
+                        )
+                    )
+                )
+
+                if (lastLocation != null) {
+                    googleMap.clear()
+                    googleMap.addMarker(
+                        MarkerOptions().position(
+                            LatLng(
+                                lastLocation!!.latitude,
+                                lastLocation!!.longitude
+                            )
+                        )
+                    )
+                }
+            }
+            googleMap.setOnMapClickListener {
+                googleMap.clear()
+                googleMap.addMarker(MarkerOptions().position(it))
+
+                lastLocation = Location(LocationManager.GPS_PROVIDER).apply {
+                    latitude = it.latitude
+                    longitude = it.longitude
+                }
+            }
+        }
     }
 
     fun fetchInfo(view: View) {
@@ -69,60 +110,57 @@ class MainActivity : AppCompatActivity() {
                 locationName.text = "Error"
                 recommendations.text = "Unable to get location, please try again"
                 getActualLocation()
-                return
+
             } else {
                 locationName.text = "Fetching"
                 recommendations.text = ""
-            }
-            var url =
-                "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
-            datePickerButton.visibility = View.INVISIBLE
-            val queue = Volley.newRequestQueue(this)
-            val jsonObjectRequest = JsonObjectRequest(
-                Request.Method.GET, url, null,
-                { response ->
-                    val dataObject = (response.getJSONArray("data")[0] as JSONObject)
-                    locationName.text = dataObject.getString("city_name")
-                    uv = dataObject.getDouble("uv")
-                    clouds = dataObject.getInt("clouds")
-                    weatherCode = dataObject.getJSONObject("weather").getInt("code")
-                    determineWeatherIcon(weatherCode)
-                    determineGoggleNeeds(clouds)
-                    determineSunscreenNeeds(uv)
+                var url =
+                    "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
-                    recommendations.text = recommendationsText
-                },
-                { error ->
-                    if (error?.networkResponse == null) {
-                        recommendations.text = "Unknown Error with no response"
-                    } else {
-                        var body: String = ""
-                        //get status code here
-                        val statusCode: String =
-                            java.lang.String.valueOf(error.networkResponse.statusCode)
-                        //get response body and parse with appropriate encoding
-                        try {
-                            val utf8: Charset = Charset.forName("UTF-8")
-                            body = JSONObject(
-                                String(
-                                    error.networkResponse.data,
-                                    utf8
-                                )
-                            ).getString("msg")
-                        } catch (e: UnsupportedEncodingException) {
-                            // exception
+                val queue = Volley.newRequestQueue(this)
+                val jsonObjectRequest = JsonObjectRequest(
+                    Request.Method.GET, url, null,
+                    { response ->
+                        val dataObject = (response.getJSONArray("data")[0] as JSONObject)
+                        locationName.text = dataObject.getString("city_name")
+                        uv = dataObject.getDouble("uv")
+                        clouds = dataObject.getInt("clouds")
+                        weatherCode = dataObject.getJSONObject("weather").getInt("code")
+                        determineWeatherIcon(weatherCode)
+                        determineGoggleNeeds(clouds, uv)
+                    },
+                    { error ->
+                        if (error?.networkResponse == null) {
+                            recommendations.text = "Unknown Error with no response"
+                        } else {
+                            var body: String = ""
+                            //get status code here
+                            val statusCode: String =
+                                java.lang.String.valueOf(error.networkResponse.statusCode)
+                            //get response body and parse with appropriate encoding
+                            try {
+                                val utf8: Charset = Charset.forName("UTF-8")
+                                body = JSONObject(
+                                    String(
+                                        error.networkResponse.data,
+                                        utf8
+                                    )
+                                ).getString("msg")
+                            } catch (e: UnsupportedEncodingException) {
+                                // exception
+                            }
+                            locationName.text = "Error"
+                            recommendations.text =
+                                "Unknown Error with message: $body status code: $statusCode."
                         }
-                        locationName.text = "Error"
-                        recommendations.text =
-                            "Unknown Error with message: $body status code: $statusCode."
-                    }
-                })
-            fetchButton.text = "Choose another date"
-            queue.add(jsonObjectRequest)
+                    })
+                queue.add(jsonObjectRequest)
+            }
+            fetchButton.text = "Return to home page"
+
         } else {
-            fetchButton.text = "Fetch Today's Information"
-            datePickerButton.visibility = View.VISIBLE
+            fetchButton.text = "Fetch Location Information"
             locationName.text = "Welcome to SkiDayz"
 
             recommendations.visibility = View.VISIBLE
@@ -217,7 +255,10 @@ class MainActivity : AppCompatActivity() {
 
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 101
             )
             return
