@@ -17,11 +17,8 @@ import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -34,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
-    var coords: LatLng? = null
+    var mapFragment: SupportMapFragment? = null
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
     var weatherCode: Int? = null
@@ -58,19 +55,30 @@ class MainActivity : AppCompatActivity() {
 
         getActualLocation()
 
-        val mapFragment = supportFragmentManager.findFragmentById(
+        mapFragment = supportFragmentManager.findFragmentById(
             R.id.map_fragment
         ) as? SupportMapFragment
         mapFragment?.getMapAsync { googleMap ->
             googleMap.setOnMapLoadedCallback {
                 googleMap.uiSettings.isZoomControlsEnabled = true
-                googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(50.0, -117.0
-                )))
+                googleMap.moveCamera(
+                    CameraUpdateFactory.newLatLng(
+                        LatLng(
+                            50.0, -117.0
+                        )
+                    )
+                )
 
-                if (lastLocation != null)
-                {
+                if (lastLocation != null) {
                     googleMap.clear()
-                    googleMap.addMarker(MarkerOptions().position(LatLng(lastLocation!!.latitude, lastLocation!!.longitude)))
+                    googleMap.addMarker(
+                        MarkerOptions().position(
+                            LatLng(
+                                lastLocation!!.latitude,
+                                lastLocation!!.longitude
+                            )
+                        )
+                    )
                 }
             }
             googleMap.setOnMapClickListener {
@@ -85,10 +93,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun fetchInfo(view:View) {
+    fun fetchInfo(view: View) {
 
-        if(lastLocation == null)
-        {
+        if (lastLocation == null) {
             getActualLocation()
         }
 
@@ -106,56 +113,55 @@ class MainActivity : AppCompatActivity() {
                 locationName.text = "Error"
                 recommendations.text = "Unable to get location, please try again"
                 getActualLocation()
-                return
-            }
-            else
-            {
+
+            } else {
                 locationName.text = "Fetching"
                 recommendations.text = ""
-            }
-            var url =
-                "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
+                var url =
+                    "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
 
-            val queue = Volley.newRequestQueue(this)
-            val jsonObjectRequest = JsonObjectRequest(
-                Request.Method.GET, url, null,
-                { response ->
-                    val dataObject = (response.getJSONArray("data")[0] as JSONObject)
-                    locationName.text = dataObject.getString("city_name")
-                    uv = dataObject.getDouble("uv")
-                    clouds = dataObject.getInt("clouds")
-                    weatherCode = dataObject.getJSONObject("weather").getInt("code")
-                    determineWeatherIcon(weatherCode)
-                    determineGoggleNeeds(clouds, uv)
-                },
-                { error ->
-                    if (error?.networkResponse == null) {
-                        recommendations.text = "Unknown Error with no response"
-                    } else {
-                        var body: String = ""
-                        //get status code here
-                        val statusCode: String =
-                            java.lang.String.valueOf(error.networkResponse.statusCode)
-                        //get response body and parse with appropriate encoding
-                        try {
-                            val utf8: Charset = Charset.forName("UTF-8")
-                            body = JSONObject(
-                                String(
-                                    error.networkResponse.data,
-                                    utf8
-                                )
-                            ).getString("msg")
-                        } catch (e: UnsupportedEncodingException) {
-                            // exception
+                val queue = Volley.newRequestQueue(this)
+                val jsonObjectRequest = JsonObjectRequest(
+                    Request.Method.GET, url, null,
+                    { response ->
+                        val dataObject = (response.getJSONArray("data")[0] as JSONObject)
+                        locationName.text = dataObject.getString("city_name")
+                        uv = dataObject.getDouble("uv")
+                        clouds = dataObject.getInt("clouds")
+                        weatherCode = dataObject.getJSONObject("weather").getInt("code")
+                        determineWeatherIcon(weatherCode)
+                        determineGoggleNeeds(clouds, uv)
+                    },
+                    { error ->
+                        if (error?.networkResponse == null) {
+                            recommendations.text = "Unknown Error with no response"
+                        } else {
+                            var body: String = ""
+                            //get status code here
+                            val statusCode: String =
+                                java.lang.String.valueOf(error.networkResponse.statusCode)
+                            //get response body and parse with appropriate encoding
+                            try {
+                                val utf8: Charset = Charset.forName("UTF-8")
+                                body = JSONObject(
+                                    String(
+                                        error.networkResponse.data,
+                                        utf8
+                                    )
+                                ).getString("msg")
+                            } catch (e: UnsupportedEncodingException) {
+                                // exception
+                            }
+                            locationName.text = "Error"
+                            recommendations.text =
+                                "Unknown Error with message: $body status code: $statusCode."
                         }
-                        locationName.text = "Error"
-                        recommendations.text =
-                            "Unknown Error with message: $body status code: $statusCode."
-                    }
-                })
+                    })
+                queue.add(jsonObjectRequest)
+            }
             fetchButton.text = "Return to home page"
-            queue.add(jsonObjectRequest)
+
         } else {
             fetchButton.text = "Fetch Location Information"
             locationName.text = "Welcome to SkiDayz"
@@ -185,27 +191,33 @@ class MainActivity : AppCompatActivity() {
                     // thunderstorm
                     imgView.setImageResource(R.drawable.icon_thunder_foreground)
                 }
+
                 in 300..502 -> {
                     // drizzle
                     // rain
                     imgView.setImageResource(R.drawable.icon_light_rain_foreground)
                 }
+
                 in 600..623 -> {
                     // snow
                     imgView.setImageResource(R.drawable.icon_snow_foreground)
                 }
+
                 in 701..781 -> {
                     // atmosphere
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
                 }
+
                 800 -> {
                     // clear
                     imgView.setImageResource(R.drawable.icon_sun_foreground)
                 }
+
                 in 801..804 -> {
                     // clouds
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
                 }
+
                 else -> {
                     // default
                     imgView.setImageResource(R.drawable.icon_cloud_foreground)
@@ -227,7 +239,10 @@ class MainActivity : AppCompatActivity() {
 
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 101
             )
             return
