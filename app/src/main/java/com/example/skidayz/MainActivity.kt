@@ -127,8 +127,13 @@ class MainActivity : AppCompatActivity() {
                         uv = dataObject.getDouble("uv")
                         clouds = dataObject.getInt("clouds")
                         weatherCode = dataObject.getJSONObject("weather").getInt("code")
+                        recommendations.text = ""
                         determineWeatherIcon(weatherCode)
-                        determineGoggleNeeds(clouds, uv)
+                        determineGoggleNeeds(clouds)
+                        determineSunscreenNeeds(uv)
+
+                        recommendations.text = recommendationsText
+                        recommendationsText = ""
                     },
                     { error ->
                         if (error?.networkResponse == null) {
