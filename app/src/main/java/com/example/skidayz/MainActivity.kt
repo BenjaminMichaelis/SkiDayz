@@ -172,7 +172,6 @@ class MainActivity : AppCompatActivity() {
             recommendations.text = ""
             imageCopyright.text = ""
         }
-
     }
 
     private fun determineSunscreenNeeds(uv: Double?) {
