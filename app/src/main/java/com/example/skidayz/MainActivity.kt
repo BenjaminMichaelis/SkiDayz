@@ -21,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
+import org.w3c.dom.Text
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 
@@ -31,6 +32,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var imgView: ImageView
     lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
+    lateinit var windInfo: TextView
+    lateinit var snowInfo: TextView
+    lateinit var uvIndexInfo: TextView
+    lateinit var tempInfo: TextView
+    lateinit var coordsInfo: TextView
+    lateinit var visInfo: TextView
     var mapFragment: SupportMapFragment? = null
     var lastLocation: Location? = null
     var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
@@ -47,12 +54,18 @@ class MainActivity : AppCompatActivity() {
 
         locationName = findViewById<TextView>(R.id.resourceTitle)
         imgView = findViewById<ImageView>(R.id.imageView)
-        imageCopyright = findViewById<TextView>(R.id.uVIndex)
 
         imgView.setImageResource(R.drawable.icon_sun_rain_foreground)
 
         recommendations = findViewById<TextView>(R.id.imageDescription)
         fetchButton = findViewById(R.id.fetchButton)
+
+        windInfo = findViewById(R.id.wind)
+        snowInfo = findViewById(R.id.snow)
+        uvIndexInfo = findViewById(R.id.index)
+        tempInfo = findViewById(R.id.temp)
+        coordsInfo = findViewById(R.id.coordinates)
+        visInfo = findViewById(R.id.vis)
 
         getActualLocation()
 
@@ -134,6 +147,13 @@ class MainActivity : AppCompatActivity() {
 
                         recommendations.text = recommendationsText
                         recommendationsText = ""
+
+                        snowInfo.text = "Snowfall: " + dataObject.getInt("precip")
+                        windInfo.text = "Wind speed: " + dataObject.getInt("wind_spd")
+                        uvIndexInfo.text = "UV Index: $uv"
+                        tempInfo.text = "Temperature: " + dataObject.getInt("temp")
+                        visInfo.text = "Visibility: " + dataObject.getInt("vis")
+                        coordsInfo.text = "Coordinates: \n \tLat: " + lastLocation?.latitude + "\n \tLng:" + lastLocation?.longitude
                     },
                     { error ->
                         if (error?.networkResponse == null) {
