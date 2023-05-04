@@ -21,7 +21,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
-import org.w3c.dom.Text
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 
@@ -30,7 +29,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var recommendations: TextView
     lateinit var locationName: TextView
     lateinit var imgView: ImageView
-    lateinit var imageCopyright: TextView
     lateinit var fusedLocationClient: FusedLocationProviderClient
     lateinit var windInfo: TextView
     lateinit var snowInfo: TextView
@@ -109,7 +107,7 @@ class MainActivity : AppCompatActivity() {
 
     fun fetchInfo(view: View) {
         getActualLocation()
-        if (fetchButton.text.startsWith("Fetch", true)) {
+        if (fetchButton.text.startsWith("Fetch Selected", true)) {
             // Add vertical scrolling to the text view
             recommendations.movementMethod = ScrollingMovementMethod()
 
@@ -120,8 +118,9 @@ class MainActivity : AppCompatActivity() {
             locationName.text = "Fetching"
 
             if (lastLocation == null) {
-                locationName.text = "Error"
-                recommendations.text = "Unable to get location, please try again"
+                locationName.text = "Unknown Location"
+                recommendations.text =
+                    "Unable to get current location, please try again or select a location on the map."
                 getActualLocation()
 
             } else {
@@ -153,7 +152,8 @@ class MainActivity : AppCompatActivity() {
                         uvIndexInfo.text = "UV Index: $uv"
                         tempInfo.text = "Temperature: " + dataObject.getInt("temp")
                         visInfo.text = "Visibility: " + dataObject.getInt("vis")
-                        coordsInfo.text = "Coordinates: \n \tLat: " + lastLocation?.latitude + "\n \tLng:" + lastLocation?.longitude
+                        coordsInfo.text =
+                            "Coordinates: \n \tLat: " + lastLocation?.latitude + "\n \tLng:" + lastLocation?.longitude
                     },
                     { error ->
                         if (error?.networkResponse == null) {
@@ -182,15 +182,27 @@ class MainActivity : AppCompatActivity() {
                     })
                 queue.add(jsonObjectRequest)
             }
-            fetchButton.text = "Return to home page"
+            fetchButton.text = "Fetch New Location Information"
 
         } else {
-            fetchButton.text = "Fetch Location Information"
+            fetchButton.text = "Fetch Selected/Current Location Information"
             locationName.text = "Welcome to SkiDayz"
+            mapFragment?.getMapAsync { googleMap ->
+                if (lastLocation != null) {
+                    googleMap.clear()
+                    googleMap.addMarker(
+                        MarkerOptions().position(
+                            LatLng(
+                                lastLocation!!.latitude,
+                                lastLocation!!.longitude
+                            )
+                        )
+                    )
+                }
+            }
 
             recommendations.visibility = View.VISIBLE
             recommendations.text = ""
-            imageCopyright.text = ""
         }
     }
 
@@ -206,16 +218,21 @@ class MainActivity : AppCompatActivity() {
             in 6.0..7.9 -> "we would recommend SPF 50 or higher. "
             in 8.0..10.9 -> "we would recommend SPF 70 or higher. "
             in 11.0..100.0 -> "we would recommend SPF 100 or higher. "
-            else -> "unexpected UV Index results. Please try again. "
+            else -> "there are unexpected UV Index results. Please try again. "
         }
     }
 
     private fun determineGoggleNeeds(clouds: Int?) {
+        if (clouds == null) {
+            recommendationsText += "Unexpected UV Index results. Please try again. "
+            return
+        }
+        recommendationsText += "For goggles, "
         recommendationsText += when (clouds) {
-            in 0..25 -> "We would recommend wearing dark lenses (Platinum, black, red). "
-            in 26..50 -> "We would recommend wearing semi-dark lenses (Blue, green, red). "
-            in 51..100 -> "You should wear light goggles (Yellow, gold/copper, amber, rose). "
-            else -> "Unexpected Cloud coverage results. Please try again. "
+            in 0..25 -> "we would recommend wearing dark lenses (Platinum, black, red). "
+            in 26..50 -> "we would recommend wearing semi-dark lenses (Blue, green, red). "
+            in 51..100 -> "we would recommend wearing light lenses (Yellow, gold/copper, amber, rose). "
+            else -> "there are unexpected Cloud coverage results. Please try again. "
         }
     }
 
@@ -276,7 +293,7 @@ class MainActivity : AppCompatActivity() {
                 .checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
-
+            // Display prompt to request permissions if they are not already granted.
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
@@ -293,5 +310,5 @@ class MainActivity : AppCompatActivity() {
                 lastLocation = it
             }
         }
-    } // one curly brace could be missing (or not)
+    }
 }
