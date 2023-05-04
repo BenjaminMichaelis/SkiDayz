@@ -70,6 +70,10 @@ class MainActivity : AppCompatActivity() {
         mapFragment = supportFragmentManager.findFragmentById(
             R.id.map_fragment
         ) as? SupportMapFragment
+        googleMapsSetup()
+    }
+
+    private fun googleMapsSetup() {
         mapFragment?.getMapAsync { googleMap ->
             googleMap.setOnMapLoadedCallback {
                 googleMap.uiSettings.isZoomControlsEnabled = true
@@ -187,19 +191,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             fetchButton.text = "Fetch Selected/Current Location Information"
             locationName.text = "Welcome to SkiDayz"
-            mapFragment?.getMapAsync { googleMap ->
-                if (lastLocation != null) {
-                    googleMap.clear()
-                    googleMap.addMarker(
-                        MarkerOptions().position(
-                            LatLng(
-                                lastLocation!!.latitude,
-                                lastLocation!!.longitude
-                            )
-                        )
-                    )
-                }
-            }
+            googleMapsSetup()
 
             recommendations.visibility = View.VISIBLE
             recommendations.text = ""
