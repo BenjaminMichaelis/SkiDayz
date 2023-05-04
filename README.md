@@ -33,7 +33,7 @@ Here is a video demoing the application. (One video in the folder is webm format
 
 1. Clone Repo/Unzip project
 2. Make sure that there is an api key for Weather Bit in the `weatherBitApiKey` under MainActivity.kt and an api key for google maps in android:value under `<meta-data` in the AndroidManifest.xml
-3. Make sure all Google Play SDK tools enabled (On Android Studio: Tools -> SDK Manager -> SDK Tools), there should be ~4 of them to select and install.
+3. Make sure all Google Play SDK tools are enabled (On Android Studio: Tools -> SDK Manager -> SDK Tools), there should be ~4 of them to select and install.
 4. Select your Emulator (We have found some of the experimental emulators like the freeform are sometimes a bit weird with current location, but the pixel ones work better)
 5. Launch the App!
 
