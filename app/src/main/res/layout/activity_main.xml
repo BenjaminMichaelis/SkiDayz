@@ -11,7 +11,7 @@
         android:layout_width="178dp"
         android:layout_height="41dp"
         android:layout_marginTop="8dp"
-        android:text="SkiDayz"
+        android:text="Welcome to SkiDayz!"
         android:textSize="34sp"
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"

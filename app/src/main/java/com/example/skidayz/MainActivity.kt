@@ -9,20 +9,28 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.CancellationToken
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.OnTokenCanceledListener
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var fetchButton: Button
@@ -38,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var visInfo: TextView
     var mapFragment: SupportMapFragment? = null
     var lastLocation: Location? = null
-    var api_id1 = "6619ba7a70e64481a70534eeb963a5c1"
+    var weatherBitApiKey = "6619ba7a70e64481a70534eeb963a5c1"
     var weatherCode: Int? = null
     var uv: Double? = null
     var clouds: Int? = null
@@ -130,9 +138,10 @@ class MainActivity : AppCompatActivity() {
             } else {
                 locationName.text = "Fetching"
                 recommendations.text = ""
-
+                var searchLat = lastLocation?.latitude
+                var searchLon = lastLocation?.longitude
                 var url =
-                    "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + api_id1
+                    "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + weatherBitApiKey
 
                 val queue = Volley.newRequestQueue(this)
                 val jsonObjectRequest = JsonObjectRequest(
@@ -157,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                         tempInfo.text = "Temperature: " + dataObject.getInt("temp")
                         visInfo.text = "Visibility: " + dataObject.getInt("vis")
                         coordsInfo.text =
-                            "Coordinates: \n \tLat: " + lastLocation?.latitude + "\n \tLng:" + lastLocation?.longitude
+                            "Coordinates: \n \tLat: " + searchLat + "\n \tLng:" + searchLon
                     },
                     { error ->
                         if (error?.networkResponse == null) {
@@ -191,10 +200,19 @@ class MainActivity : AppCompatActivity() {
         } else {
             fetchButton.text = "Fetch Selected/Current Location Information"
             locationName.text = "Welcome to SkiDayz"
+            getActualLocation()
             googleMapsSetup()
 
+            snowInfo.text = ""
+            windInfo.text = ""
+            uvIndexInfo.text = ""
+            tempInfo.text = ""
+            visInfo.text = ""
+            coordsInfo.text =
+                "Current location Coordinates: \n \tLat: " + lastLocation?.latitude + "\n \tLng:" + lastLocation?.longitude
             recommendations.visibility = View.VISIBLE
             recommendations.text = ""
+
         }
     }
 
@@ -276,9 +294,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getActualLocation() {
-
         val task = fusedLocationClient.lastLocation
-
         if (ActivityCompat
                 .checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED && ActivityCompat
@@ -297,10 +313,26 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        task.addOnSuccessListener {
-            if (it != null) {
-                lastLocation = it
+        //
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, object : CancellationToken() {
+            override fun onCanceledRequested(p0: OnTokenCanceledListener) = CancellationTokenSource().token
+
+            override fun isCancellationRequested() = false
+        })
+            .addOnSuccessListener { location: Location? ->
+                if (location == null)
+                {
+                    task.addOnSuccessListener {
+                        if (it != null) {
+                            lastLocation = it
+                        }
+                    }
+                }
+                else {
+                    lastLocation = location
+                }
             }
-        }
+
+
     }
 }
