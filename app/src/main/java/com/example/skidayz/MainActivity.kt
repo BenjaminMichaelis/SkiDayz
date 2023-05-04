@@ -9,17 +9,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -30,7 +27,6 @@ import com.google.android.gms.tasks.OnTokenCanceledListener
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
-
 
 class MainActivity : AppCompatActivity() {
     lateinit var fetchButton: Button
@@ -314,21 +310,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         //
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, object : CancellationToken() {
-            override fun onCanceledRequested(p0: OnTokenCanceledListener) = CancellationTokenSource().token
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            object : CancellationToken() {
+                override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                    CancellationTokenSource().token
 
-            override fun isCancellationRequested() = false
-        })
+                override fun isCancellationRequested() = false
+            })
             .addOnSuccessListener { location: Location? ->
-                if (location == null)
-                {
+                if (location == null) {
                     task.addOnSuccessListener {
                         if (it != null) {
                             lastLocation = it
                         }
                     }
-                }
-                else {
+                } else {
                     lastLocation = location
                 }
             }
