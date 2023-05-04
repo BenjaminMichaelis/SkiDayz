@@ -134,9 +134,9 @@ class MainActivity : AppCompatActivity() {
             } else {
                 locationName.text = "Fetching"
                 recommendations.text = ""
-                var searchLat = lastLocation?.latitude
-                var searchLon = lastLocation?.longitude
-                var url =
+                val searchLat = lastLocation?.latitude
+                val searchLon = lastLocation?.longitude
+                val url =
                     "https://api.weatherbit.io/v2.0/current?" + "lat=" + lastLocation?.latitude + "&lon=" + lastLocation?.longitude + "&key=" + weatherBitApiKey
 
                 val queue = Volley.newRequestQueue(this)
@@ -162,13 +162,13 @@ class MainActivity : AppCompatActivity() {
                         tempInfo.text = "Temperature: " + dataObject.getInt("temp")
                         visInfo.text = "Visibility: " + dataObject.getInt("vis")
                         coordsInfo.text =
-                            "Coordinates: \n \tLat: " + searchLat + "\n \tLng:" + searchLon
+                            "Coordinates: \n \tLat: $searchLat\n \tLng:$searchLon"
                     },
                     { error ->
                         if (error?.networkResponse == null) {
                             recommendations.text = "Unknown Error with no response"
                         } else {
-                            var body: String = ""
+                            var body = ""
                             //get status code here
                             val statusCode: String =
                                 java.lang.String.valueOf(error.networkResponse.statusCode)
@@ -309,7 +309,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        //
         fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
             object : CancellationToken() {
@@ -329,7 +328,5 @@ class MainActivity : AppCompatActivity() {
                     lastLocation = location
                 }
             }
-
-
     }
 }
