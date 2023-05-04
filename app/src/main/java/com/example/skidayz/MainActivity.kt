@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity() {
             if (lastLocation == null) {
                 locationName.text = "Unknown Location"
                 recommendations.text =
-                    "Unable to get current location, please try again or select a location on the map."
+                    "Unable to get current location currently, please try again shortly or select a location on the map."
                 getActualLocation()
 
             } else {

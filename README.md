@@ -40,4 +40,5 @@ Here is a video demoing the application. (One video in the folder is webm format
 ## Issues
 
 - I have recommended a fresh emulator device as depending on location permission on the emulator, sometimes the current location in the emulator isn't being obtained properly. You can use the google map still however to select your location in this case.
+- As shown in the demo video, the location may show unknown for a few seconds as system obtains the current location. The map is still useable in this case, and current location will work when it is obtained from the system. The default location for android emulators is Mountain View, CA, but this can be adjusted in the emulator settings.
 - If you find other issues, please open an issue or reach out to me.
